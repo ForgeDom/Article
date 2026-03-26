@@ -1,0 +1,27 @@
+title: "AutomateWithAI"
+description: "Practical guides on automation, AI tools, and Python for developers"
+url: "https://forgеdom.github.io"
+baseurl: "/Article"
+lang: en
+
+theme: minima
+
+author:
+  name: "ForgeDom"
+
+minima:
+  skin: classic
+
+show_excerpts: true
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+permalink: /:year/:month/:day/:title/
+
+exclude:
+  - generate.py
+  - topics.csv
+  - README.md
