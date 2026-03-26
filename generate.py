@@ -80,16 +80,27 @@ def generate_article(topic):
         "generationConfig": {"maxOutputTokens": 2000}
     }).encode("utf-8")
 
-    req = urllib.request.Request(
-        GEMINI_URL,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    with urllib.request.urlopen(req) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(
+                GEMINI_URL,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            return data["candidates"][0]["content"]["parts"][0]["text"]
 
-    return data["candidates"][0]["content"]["parts"][0]["text"]
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                wait = 30 * (attempt + 1)
+                print(f"Rate limit hit, waiting {wait}s...")
+                import time; time.sleep(wait)
+            else:
+                raise
+
+    raise RuntimeError("Gemini API unavailable after 3 attempts")
 
 def inject_links(text):
     for tool, url in AFFILIATE_LINKS.items():
