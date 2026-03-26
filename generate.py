@@ -2,10 +2,8 @@ import csv
 import datetime
 import os
 import re
-import urllib.request
-import urllib.error
-import json
 import time
+from groq import Groq
 
 GROQ_API_KEY = os.environ["GROQ_API_KEY"]
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -75,39 +73,23 @@ def generate_article(topic):
         keyword=topic["keyword"]
     )
 
-    payload = json.dumps({
-        "model": "llama-3.3-70b-versatile",
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 2000,
-        "temperature": 0.7
-    }).encode("utf-8")
+    client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
     for attempt in range(3):
         try:
-            req = urllib.request.Request(
-                GROQ_URL,
-                data=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {GROQ_API_KEY}"
-                },
-                method="POST"
+            chat = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=2000,
+                temperature=0.7
             )
-            with urllib.request.urlopen(req) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"]
-
-        except urllib.error.HTTPError as e:
-            body = e.read().decode("utf-8")
-            print(f"HTTP {e.code}: {body}")
-            if e.code == 429:
-                wait = 30 * (attempt + 1)
-                print(f"Rate limit, waiting {wait}s...")
-                time.sleep(wait)
+            return chat.choices[0].message.content
+        except Exception as e:
+            print(f"Attempt {attempt+1} failed: {e}")
+            if attempt < 2:
+                time.sleep(30)
             else:
                 raise
-
-    raise RuntimeError("Groq API unavailable after 3 attempts")
 
 def inject_links(text):
     for tool, url in AFFILIATE_LINKS.items():
