@@ -1,16 +1,20 @@
-import anthropic
 import csv
 import datetime
 import os
 import re
+import urllib.request
+import json
 
-client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_URL = (
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    "gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY
+)
 
 AFFILIATE_LINKS = {
-    "n8n":        "https://n8n.io/?ref=YOUR_ID",
-    "Hostinger":  "https://hostinger.com/?ref=YOUR_ID",
-    "Render":     "https://render.com/?ref=YOUR_ID",
-    "PartnerStack":"https://partnerstack.com/?ref=YOUR_ID",
+    "n8n":       "https://n8n.io/?ref=YOUR_ID",
+    "Hostinger": "https://hostinger.com/?ref=YOUR_ID",
+    "Render":    "https://render.com/?ref=YOUR_ID",
 }
 
 PROMPT_EN = """Write an SEO blog post about: {title}
@@ -21,14 +25,14 @@ Structure:
 - Intro (120 words): hook + what reader will learn
 - 3 sections with H2 headers (practical, specific)
 - Code example if relevant (Python or bash)
-- Conclusion with CTA: "Try [tool] free →"
+- Conclusion with CTA
 - Section "Recommended tools" at the end
 
 Rules:
-- 900–1100 words total
+- 900-1100 words total
 - Conversational tone, no buzzwords
 - No invented statistics
-- Mention real tools: n8n, Claude, Render, Hostinger where relevant
+- Mention real tools: n8n, Render, Hostinger where relevant
 """
 
 PROMPT_UK = """Напиши SEO-статтю для блогу на тему: {title}
@@ -39,18 +43,17 @@ PROMPT_UK = """Напиши SEO-статтю для блогу на тему: {t
 - Вступ (120 слів): чіпляючий початок + що дізнається читач
 - 3 секції з H2 заголовками (практичні, конкретні)
 - Приклад коду якщо доречно (Python або bash)
-- Висновок з CTA: "Спробуй [інструмент] безкоштовно →"
+- Висновок з CTA
 - Секція "Рекомендовані інструменти" в кінці
 
 Правила:
-- 800–1000 слів
+- 800-1000 слів
 - Розмовний тон, без канцеляризмів
 - Не вигадуй статистику
-- Згадуй реальні інструменти: n8n, Claude, Render, Hostinger де доречно
+- Згадуй реальні інструменти: n8n, Render, Hostinger де доречно
 """
 
 def load_next_topic(path="topics.csv"):
-    rows = []
     with open(path, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     pending = [r for r in rows if r["status"] == "pending"]
@@ -72,16 +75,24 @@ def generate_article(topic):
         title=topic["title"],
         keyword=topic["keyword"]
     )
-    msg = client.messages.create(
-        model="claude-sonnet-4-5",
-        max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}]
+    payload = json.dumps({
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 2000}
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        GEMINI_URL,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST"
     )
-    return msg.content[0].text
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 def inject_links(text):
     for tool, url in AFFILIATE_LINKS.items():
-        # вставляємо лінк тільки перший раз
         text = re.sub(
             rf'\b{re.escape(tool)}\b',
             f'[{tool}]({url})',
@@ -99,9 +110,8 @@ def save_post(topic, content):
     date = datetime.date.today().isoformat()
     slug = slugify(topic["title"])
     lang = topic.get("lang", "en")
-    folder = "_posts"
-    os.makedirs(folder, exist_ok=True)
-    filename = f"{folder}/{date}-{slug}.md"
+    os.makedirs("_posts", exist_ok=True)
+    filename = f"_posts/{date}-{slug}.md"
     frontmatter = f"""---
 layout: post
 title: "{topic['title']}"
@@ -113,7 +123,7 @@ description: "Learn about {topic['keyword']} — practical guide with examples."
 """
     with open(filename, "w", encoding="utf-8") as f:
         f.write(frontmatter + content)
-    print(f"✓ Saved: {filename}")
+    print(f"Saved: {filename}")
     return filename
 
 def main():
@@ -122,12 +132,12 @@ def main():
         print("No pending topics. Add more to topics.csv")
         return
 
-    print(f"→ Generating: {topic['title']}")
+    print(f"Generating: {topic['title']}")
     article = generate_article(topic)
     article = inject_links(article)
     save_post(topic, article)
     save_topics("topics.csv", all_rows)
-    print("✓ Done")
+    print("Done")
 
 if __name__ == "__main__":
     main()

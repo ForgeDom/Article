@@ -2,28 +2,25 @@ name: Daily article generator
 
 on:
   schedule:
-    - cron: '0 7 * * *'  # щодня о 7:00 UTC (9:00 Київ)
-  workflow_dispatch:      # ручний запуск для тесту
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   generate:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install anthropic
-
       - name: Generate article
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python generate.py
 
       - name: Commit and push
