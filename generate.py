@@ -5,109 +5,170 @@ import re
 import time
 from groq import Groq
 
-GROQ_API_KEY = os.environ["GROQ_API_KEY"]
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-
 AFFILIATE_LINKS = {
     "n8n":       "https://n8n.io/?ref=YOUR_ID",
     "Hostinger": "https://hostinger.com/?ref=YOUR_ID",
     "Render":    "https://render.com/?ref=YOUR_ID",
 }
 
-PROMPT_EN = """Write a detailed SEO blog post about: {title}
+PROMPT_EN = """You are an experienced developer writing for other developers.
+Write a blog post about: {title}
 Target keyword: "{keyword}"
 
+Your writing style:
+- Write like you're explaining to a colleague over coffee
+- Use "you" and "I" — be personal
+- Start sections with a surprising fact, question, or counterintuitive statement
+- Add occasional dry humor where natural
+- Be opinionated — say what actually works and what doesn't
+
 Structure (follow exactly):
-# [H1 with keyword]
 
-[Intro: 2 paragraphs, hook + what reader will learn]
+# [Catchy H1 — not just the keyword, make it interesting]
 
-## What is [topic] and why it matters
-[2-3 paragraphs, explain the problem this solves]
+> [One sentence that captures why this matters. Make it punchy.]
 
-## Step-by-step: [main action]
-[Numbered steps, each with explanation]
-[Include a real code example in Python or bash if relevant]
+[Intro: Start with a relatable pain point or surprising fact. 2 paragraphs.]
 
-## Common mistakes to avoid
-[3-5 bullet points with real mistakes and fixes]
+## [Problem this solves — phrased as a question or bold claim]
 
-## [Tool/approach] vs alternatives
-| Feature | [Main tool] | Alternative 1 | Alternative 2 |
-|---------|------------|---------------|---------------|
-[Fill 4-5 rows with real comparisons]
+[2 paragraphs. Be specific about the pain. Use "you've probably..." or "sound familiar?"]
+
+## [Main how-to section — action verb first]
+
+[Numbered steps. Each step has:]
+- What to do (one clear sentence)
+- Why it matters (one sentence)
+- Code example if relevant
+```python or bash
+# Real, runnable code with comments
+```
+
+## The part everyone gets wrong
+
+[3-4 common mistakes. Be direct. "Most tutorials tell you X — that's wrong because..."]
+
+## [Tool] vs the alternatives — honest comparison
+
+| | [Tool] | [Alt 1] | [Alt 2] |
+|---|---|---|---|
+| Free tier | ✅ Yes | ❌ No | ⚠️ Limited |
+| Setup time | 5 min | 30 min | 15 min |
+| Best for | Developers | Non-tech | Enterprise |
+| Learning curve | Low | Medium | High |
+
+[2 sentences with your honest take on when to use which]
+
+## Quick wins you can implement today
+
+- ✅ [Actionable tip 1 — specific and immediate]
+- ✅ [Actionable tip 2 — specific and immediate]
+- ✅ [Actionable tip 3 — specific and immediate]
 
 ## FAQ
-**Q: [Common question 1]?**
-A: [Concise answer]
 
-**Q: [Common question 2]?**
-A: [Concise answer]
+**Q: [Question a beginner would actually ask]?**
+A: [Direct answer, no fluff. Max 2 sentences.]
 
-**Q: [Common question 3]?**
-A: [Concise answer]
+**Q: [Question an intermediate would ask]?**
+A: [Direct answer with nuance.]
 
-## Recommended tools
-- [Tool 1] — [one line description]
-- [Tool 2] — [one line description]
+**Q: [Gotcha question — something that trips people up]?**
+A: [Honest answer even if the answer is "it depends, here's why"]
 
-## Conclusion
-[2 paragraphs, summarize key points + CTA]
+## Bottom line
+
+[2 paragraphs. What's the one thing to remember? What should they do right now?]
+
+---
+*Tools mentioned in this post: list them with one-line descriptions and links*
 
 Rules:
-- 1200-1500 words total
-- Conversational tone, no buzzwords
-- No invented statistics — only say "according to" if you're certain
-- Every code example must be real and runnable
-- Mention n8n, Render, Hostinger naturally where relevant
+- 1300-1600 words
+- Every code example must actually work
+- No invented statistics — if you're not sure, don't say it
+- Mention n8n, Render, or Hostinger only where genuinely relevant
+- End every section with momentum — reader should want to scroll down
 """
 
-PROMPT_UK = """Напиши детальну SEO-статтю на тему: {title}
+PROMPT_UK = """Ти досвідчений розробник який пише для інших розробників.
+Напиши статтю на тему: {title}
 Головний ключ: "{keyword}"
 
+Стиль написання:
+- Пиши як пояснюєш колезі за кавою
+- Використовуй "ти" і "я" — будь особистим
+- Починай секції з несподіваного факту або провокаційного твердження
+- Будь відвертим — говори що реально працює, а що ні
+- Іноді додавай легкий гумор де це доречно
+
 Структура (дотримуйся точно):
-# [H1 з ключовим словом]
 
-[Вступ: 2 абзаци, чіпляючий початок + що дізнається читач]
+# [Цікавий H1 — не просто ключове слово, зроби його інтригуючим]
 
-## Що таке [тема] і навіщо це потрібно
-[2-3 абзаци, поясни яку проблему це вирішує]
+> [Одне речення чому це важливо. Коротко і влучно.]
 
-## Покроково: [основна дія]
-[Нумеровані кроки з поясненням]
-[Додай реальний приклад коду на Python або bash якщо доречно]
+[Вступ: Почни з болю читача або несподіваного факту. 2 абзаци.]
 
-## Типові помилки яких варто уникати
-[3-5 пунктів з реальними помилками і як їх виправити]
+## [Проблема — сформульована як питання або сміливе твердження]
 
-## [Інструмент] vs альтернативи
-| Критерій | [Головний інструмент] | Альтернатива 1 | Альтернатива 2 |
-|----------|----------------------|----------------|----------------|
-[Заповни 4-5 рядків реальними порівняннями]
+[2 абзаци. Конкретно про біль. Використовуй "ти напевно..." або "знайомо?"]
+
+## [Основна інструкція — починай з дієслова дії]
+
+[Нумеровані кроки. Кожен крок містить:]
+- Що робити (одне чітке речення)
+- Чому це важливо (одне речення)
+- Приклад коду якщо доречно
+```python або bash
+# Реальний робочий код з коментарями
+```
+
+## Помилка яку роблять всі
+
+[3-4 типові помилки. Будь прямим. "Більшість туторіалів кажуть X — це хибно тому що..."]
+
+## [Інструмент] vs альтернативи — чесне порівняння
+
+| | [Інструмент] | [Альт 1] | [Альт 2] |
+|---|---|---|---|
+| Безкоштовний | ✅ Так | ❌ Ні | ⚠️ Обмежено |
+| Налаштування | 5 хв | 30 хв | 15 хв |
+| Для кого | Розробники | Нетехнічні | Бізнес |
+| Складність | Низька | Середня | Висока |
+
+[2 речення з твоєю чесною думкою коли що використовувати]
+
+## Що можна зробити вже сьогодні
+
+- ✅ [Конкретна дія 1 — негайно виконувана]
+- ✅ [Конкретна дія 2 — конкретна і практична]
+- ✅ [Конкретна дія 3 — конкретна і практична]
 
 ## Часті питання
-**Q: [Часте питання 1]?**
-A: [Коротка відповідь]
 
-**Q: [Часте питання 2]?**
-A: [Коротка відповідь]
+**Q: [Питання початківця]?**
+A: [Пряма відповідь без води. Максимум 2 речення.]
 
-**Q: [Часте питання 3]?**
-A: [Коротка відповідь]
+**Q: [Питання середнього рівня]?**
+A: [Відповідь з нюансами.]
 
-## Рекомендовані інструменти
-- [Інструмент 1] — [один рядок опису]
-- [Інструмент 2] — [один рядок опису]
+**Q: [Каверзне питання — те що всіх плутає]?**
+A: [Чесна відповідь навіть якщо "залежить від ситуації"]
 
-## Висновок
-[2 абзаци, підсумок + CTA]
+## Головне
+
+[2 абзаци. Що одне варто запам'ятати? Що зробити прямо зараз?]
+
+---
+*Інструменти згадані в статті: список з однорядковими описами*
 
 Правила:
-- 1100-1400 слів
-- Розмовний тон, без канцеляризмів
+- 1200-1500 слів
+- Кожен приклад коду має реально працювати
 - Не вигадуй статистику
-- Кожен приклад коду має бути реальним і робочим
-- Згадуй n8n, Render, Hostinger природно де доречно
+- Згадуй n8n, Render, Hostinger тільки де справді доречно
+- Кожна секція має закінчуватись так щоб хотілось читати далі
 """
 
 def load_next_topic(path="topics.csv"):
@@ -140,8 +201,8 @@ def generate_article(topic):
             chat = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=2000,
-                temperature=0.7
+                max_tokens=2500,
+                temperature=0.8
             )
             return chat.choices[0].message.content
         except Exception as e:

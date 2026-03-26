@@ -149,6 +149,63 @@
       font-size: 13px;
       color: #999;
     }
+    /* Blockquote — для intro цитат */
+.post-content blockquote {
+  border-left: 3px solid #0070f3;
+  margin: 24px 0;
+  padding: 12px 20px;
+  background: #f0f7ff;
+  border-radius: 0 8px 8px 0;
+  font-style: normal;
+  color: #1a1a1a;
+}
+
+/* Таблиці */
+.post-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 14px;
+}
+.post-content th {
+  background: #f4f4f4;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e0e0;
+}
+.post-content td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.post-content tr:hover td {
+  background: #fafafa;
+}
+
+/* Чеклисти ✅ */
+.post-content ul li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+/* FAQ секція */
+.post-content strong {
+  color: #1a1a1a;
+}
+
+/* Горизонтальна лінія */
+.post-content hr {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 40px 0;
+}
+
+/* Перший абзац після H1 — більший */
+.post-content > p:first-child {
+  font-size: 19px;
+  color: #444;
+  line-height: 1.7;
+}
 
     @media (max-width: 600px) {
       .post-header h1 { font-size: 26px; }
