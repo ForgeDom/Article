@@ -11,206 +11,234 @@ AFFILIATE_LINKS = {
     "Render":    "https://render.com/?ref=YOUR_ID",
 }
 
-PROMPT_EN = """You are an experienced developer writing for other developers.
-Write a blog post about: {title}
-Target keyword: "{keyword}"
+def get_client():
+    return Groq(api_key=os.environ["GROQ_API_KEY"])
 
-Your writing style:
-- Write like you're explaining to a colleague over coffee
-- Use "you" and "I" — be personal
-- Start sections with a surprising fact, question, or counterintuitive statement
-- Add occasional dry humor where natural
-- Be opinionated — say what actually works and what doesn't
-
-Structure (follow exactly):
-
-# [Catchy H1 — not just the keyword, make it interesting]
-
-> [One sentence that captures why this matters. Make it punchy.]
-
-[Intro: Start with a relatable pain point or surprising fact. 2 paragraphs.]
-
-## [Problem this solves — phrased as a question or bold claim]
-
-[2 paragraphs. Be specific about the pain. Use "you've probably..." or "sound familiar?"]
-
-## [Main how-to section — action verb first]
-
-[Numbered steps. Each step has:]
-- What to do (one clear sentence)
-- Why it matters (one sentence)
-- Code example if relevant
-```python or bash
-# Real, runnable code with comments
-```
-
-## The part everyone gets wrong
-
-[3-4 common mistakes. Be direct. "Most tutorials tell you X — that's wrong because..."]
-
-## [Tool] vs the alternatives — honest comparison
-
-| | [Tool] | [Alt 1] | [Alt 2] |
-|---|---|---|---|
-| Free tier | ✅ Yes | ❌ No | ⚠️ Limited |
-| Setup time | 5 min | 30 min | 15 min |
-| Best for | Developers | Non-tech | Enterprise |
-| Learning curve | Low | Medium | High |
-
-[2 sentences with your honest take on when to use which]
-
-## Quick wins you can implement today
-
-- ✅ [Actionable tip 1 — specific and immediate]
-- ✅ [Actionable tip 2 — specific and immediate]
-- ✅ [Actionable tip 3 — specific and immediate]
-
-## FAQ
-
-**Q: [Question a beginner would actually ask]?**
-A: [Direct answer, no fluff. Max 2 sentences.]
-
-**Q: [Question an intermediate would ask]?**
-A: [Direct answer with nuance.]
-
-**Q: [Gotcha question — something that trips people up]?**
-A: [Honest answer even if the answer is "it depends, here's why"]
-
-## Bottom line
-
-[2 paragraphs. What's the one thing to remember? What should they do right now?]
-
----
-*Tools mentioned in this post: list them with one-line descriptions and links*
-
-Rules:
-- 1300-1600 words
-- Every code example must actually work
-- No invented statistics — if you're not sure, don't say it
-- Mention n8n, Render, or Hostinger only where genuinely relevant
-- End every section with momentum — reader should want to scroll down
-"""
-
-PROMPT_UK = """Ти досвідчений розробник який пише для інших розробників.
-Напиши статтю на тему: {title}
-Головний ключ: "{keyword}"
-
-Стиль написання:
-- Пиши як пояснюєш колезі за кавою
-- Використовуй "ти" і "я" — будь особистим
-- Починай секції з несподіваного факту або провокаційного твердження
-- Будь відвертим — говори що реально працює, а що ні
-- Іноді додавай легкий гумор де це доречно
-
-Структура (дотримуйся точно):
-
-# [Цікавий H1 — не просто ключове слово, зроби його інтригуючим]
-
-> [Одне речення чому це важливо. Коротко і влучно.]
-
-[Вступ: Почни з болю читача або несподіваного факту. 2 абзаци.]
-
-## [Проблема — сформульована як питання або сміливе твердження]
-
-[2 абзаци. Конкретно про біль. Використовуй "ти напевно..." або "знайомо?"]
-
-## [Основна інструкція — починай з дієслова дії]
-
-[Нумеровані кроки. Кожен крок містить:]
-- Що робити (одне чітке речення)
-- Чому це важливо (одне речення)
-- Приклад коду якщо доречно
-```python або bash
-# Реальний робочий код з коментарями
-```
-
-## Помилка яку роблять всі
-
-[3-4 типові помилки. Будь прямим. "Більшість туторіалів кажуть X — це хибно тому що..."]
-
-## [Інструмент] vs альтернативи — чесне порівняння
-
-| | [Інструмент] | [Альт 1] | [Альт 2] |
-|---|---|---|---|
-| Безкоштовний | ✅ Так | ❌ Ні | ⚠️ Обмежено |
-| Налаштування | 5 хв | 30 хв | 15 хв |
-| Для кого | Розробники | Нетехнічні | Бізнес |
-| Складність | Низька | Середня | Висока |
-
-[2 речення з твоєю чесною думкою коли що використовувати]
-
-## Що можна зробити вже сьогодні
-
-- ✅ [Конкретна дія 1 — негайно виконувана]
-- ✅ [Конкретна дія 2 — конкретна і практична]
-- ✅ [Конкретна дія 3 — конкретна і практична]
-
-## Часті питання
-
-**Q: [Питання початківця]?**
-A: [Пряма відповідь без води. Максимум 2 речення.]
-
-**Q: [Питання середнього рівня]?**
-A: [Відповідь з нюансами.]
-
-**Q: [Каверзне питання — те що всіх плутає]?**
-A: [Чесна відповідь навіть якщо "залежить від ситуації"]
-
-## Головне
-
-[2 абзаци. Що одне варто запам'ятати? Що зробити прямо зараз?]
-
----
-*Інструменти згадані в статті: список з однорядковими описами*
-
-Правила:
-- 1200-1500 слів
-- Кожен приклад коду має реально працювати
-- Не вигадуй статистику
-- Згадуй n8n, Render, Hostinger тільки де справді доречно
-- Кожна секція має закінчуватись так щоб хотілось читати далі
-"""
-
-def load_next_topic(path="topics.csv"):
-    with open(path, newline="", encoding="utf-8") as f:
-        rows = list(csv.DictReader(f))
-    pending = [r for r in rows if r["status"] == "pending"]
-    if not pending:
-        return None, rows
-    pending[0]["status"] = "done"
-    return pending[0], rows
-
-def save_topics(path, rows):
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=rows[0].keys())
-        w.writeheader()
-        w.writerows(rows)
-
-def generate_article(topic):
-    lang = topic.get("lang", "en")
-    prompt_tpl = PROMPT_UK if lang == "uk" else PROMPT_EN
-    prompt = prompt_tpl.format(
-        title=topic["title"],
-        keyword=topic["keyword"]
-    )
-
-    client = Groq(api_key=os.environ["GROQ_API_KEY"])
-
+def generate_section(client, prompt, max_tokens=500):
     for attempt in range(3):
         try:
             chat = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=2500,
+                max_tokens=max_tokens,
                 temperature=0.8
             )
-            return chat.choices[0].message.content
+            return chat.choices[0].message.content.strip()
         except Exception as e:
             print(f"Attempt {attempt+1} failed: {e}")
             if attempt < 2:
                 time.sleep(30)
             else:
                 raise
+
+def generate_article(topic):
+    client = get_client()
+    title = topic["title"]
+    keyword = topic["keyword"]
+    lang = topic.get("lang", "en")
+
+    print(f"  Generating intro...")
+    if lang == "uk":
+        intro = generate_section(client,
+            f"Ти досвідчений розробник. Напиши вступ (2 абзаци) для статті '{title}'. "
+            f"Починай з конкретного болю читача або несподіваного факту. "
+            f"Тон: розмовний, як пояснюєш колезі. Без канцеляризмів і buzzwords."
+        )
+    else:
+        intro = generate_section(client,
+            f"You are an experienced developer. Write a 2-paragraph intro for '{title}'. "
+            f"Start with a relatable pain point or surprising fact. "
+            f"Tone: conversational, like explaining to a colleague. No buzzwords."
+        )
+
+    time.sleep(2)
+    print(f"  Generating problem section...")
+    if lang == "uk":
+        problem = generate_section(client,
+            f"Напиши 2 абзаци про проблему яку вирішує '{title}'. "
+            f"Ключове слово: '{keyword}'. "
+            f"Будь конкретним. Використовуй 'ти напевно...' або 'знайомо?'. "
+            f"Без вступних фраз — одразу до суті."
+        )
+    else:
+        problem = generate_section(client,
+            f"Write 2 paragraphs about the problem that '{title}' solves. "
+            f"Target keyword: '{keyword}'. "
+            f"Be specific. Use 'you've probably...' or 'sound familiar?' style. "
+            f"No intro phrases — get straight to the point."
+        )
+
+    time.sleep(2)
+    print(f"  Generating how-to section...")
+    if lang == "uk":
+        howto = generate_section(client,
+            f"Напиши покроковий розділ для статті '{title}'. "
+            f"4-5 нумерованих кроків. Кожен крок: що робити + чому важливо (1-2 речення). "
+            f"Додай реальний приклад коду на Python або bash якщо доречно. "
+            f"Код має бути робочим з коментарями.",
+            max_tokens=800
+        )
+    else:
+        howto = generate_section(client,
+            f"Write a step-by-step how-to section for '{title}'. "
+            f"4-5 numbered steps. Each step: what to do + why it matters (1-2 sentences). "
+            f"Include a real Python or bash code example if relevant. "
+            f"Code must be runnable with comments.",
+            max_tokens=800
+        )
+
+    time.sleep(2)
+    print(f"  Generating mistakes section...")
+    if lang == "uk":
+        mistakes = generate_section(client,
+            f"Напиши 3-4 типові помилки які роблять люди з '{keyword}'. "
+            f"Будь прямим і відвертим. "
+            f"Формат: кожна помилка з поясненням чому це погано і як правильно. "
+            f"Починай не з 'Ось помилки' а одразу з першої помилки."
+        )
+    else:
+        mistakes = generate_section(client,
+            f"Write 3-4 common mistakes people make with '{keyword}'. "
+            f"Be direct and opinionated. "
+            f"Format: each mistake with explanation of why it's wrong and what to do instead. "
+            f"Start directly with the first mistake, no intro sentence."
+        )
+
+    time.sleep(2)
+    print(f"  Generating comparison section...")
+    if lang == "uk":
+        comparison = generate_section(client,
+            f"Порівняй головний інструмент для '{keyword}' з 2 альтернативами. "
+            f"Формат для кожного: **Назва інструменту** — найкраще для [тип користувача]. "
+            f"Плюси: [2-3 пункти]. Мінуси: [1-2 пункти]. "
+            f"В кінці: 2 речення твоєї чесної думки коли що використовувати."
+        )
+    else:
+        comparison = generate_section(client,
+            f"Compare the main tool for '{keyword}' with 2 alternatives. "
+            f"Format for each: **Tool name** — best for [type of user]. "
+            f"Pros: [2-3 points]. Cons: [1-2 points]. "
+            f"End with: 2 sentences of your honest take on when to use which."
+        )
+
+    time.sleep(2)
+    print(f"  Generating quick wins...")
+    if lang == "uk":
+        quickwins = generate_section(client,
+            f"Напиши 3 конкретні дії які можна зробити сьогодні щодо '{keyword}'. "
+            f"Кожна дія на новому рядку починається з '- '. "
+            f"Дії мають бути конкретними і виконуваними за 30 хвилин. "
+            f"Без вступу — одразу список."
+        )
+    else:
+        quickwins = generate_section(client,
+            f"Write 3 specific actions someone can take today related to '{keyword}'. "
+            f"Each action on a new line starting with '- '. "
+            f"Actions must be concrete and doable in under 30 minutes. "
+            f"No intro — start directly with the list."
+        )
+
+    time.sleep(2)
+    print(f"  Generating FAQ...")
+    if lang == "uk":
+        faq = generate_section(client,
+            f"Напиши 3 питання і відповіді про '{keyword}'. "
+            f"Формат: **Q: питання?** A: відповідь (максимум 3 речення). "
+            f"Питання мають бути реальними — які справді гуглять люди. "
+            f"Відповіді прямі і без води."
+        )
+    else:
+        faq = generate_section(client,
+            f"Write 3 FAQ questions and answers about '{keyword}'. "
+            f"Format: **Q: question?** A: answer (max 3 sentences). "
+            f"Questions must be real — things people actually Google. "
+            f"Answers direct and no fluff."
+        )
+
+    time.sleep(2)
+    print(f"  Generating conclusion...")
+    if lang == "uk":
+        conclusion = generate_section(client,
+            f"Напиши висновок (2 абзаци) для статті '{title}'. "
+            f"Перший абзац: підсумуй головну думку. "
+            f"Другий абзац: чіткий заклик до дії — що зробити прямо зараз. "
+            f"Тон: мотивуючий але не пафосний."
+        )
+    else:
+        conclusion = generate_section(client,
+            f"Write a conclusion (2 paragraphs) for '{title}'. "
+            f"First paragraph: summarize the key takeaway. "
+            f"Second paragraph: clear call to action — what to do right now. "
+            f"Tone: motivating but not cheesy."
+        )
+
+    if lang == "uk":
+        article = f"""# {title}
+
+{intro}
+
+## Проблема
+
+{problem}
+
+## Як це зробити
+
+{howto}
+
+## Помилки яких варто уникати
+
+{mistakes}
+
+## Порівняння інструментів
+
+{comparison}
+
+## Що зробити вже сьогодні
+
+{quickwins}
+
+## Часті питання
+
+{faq}
+
+## Висновок
+
+{conclusion}
+"""
+    else:
+        article = f"""# {title}
+
+{intro}
+
+## The Problem
+
+{problem}
+
+## How to Get Started
+
+{howto}
+
+## Mistakes to Avoid
+
+{mistakes}
+
+## Tool Comparison
+
+{comparison}
+
+## Quick Wins for Today
+
+{quickwins}
+
+## FAQ
+
+{faq}
+
+## Bottom Line
+
+{conclusion}
+"""
+    return article
 
 def inject_links(text):
     for tool, url in AFFILIATE_LINKS.items():
@@ -246,6 +274,21 @@ description: "Learn about {topic['keyword']} — practical guide with examples."
         f.write(frontmatter + content)
     print(f"Saved: {filename}")
     return filename
+
+def load_next_topic(path="topics.csv"):
+    with open(path, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    pending = [r for r in rows if r["status"] == "pending"]
+    if not pending:
+        return None, rows
+    pending[0]["status"] = "done"
+    return pending[0], rows
+
+def save_topics(path, rows):
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=rows[0].keys())
+        w.writeheader()
+        w.writerows(rows)
 
 def main():
     topic, all_rows = load_next_topic()

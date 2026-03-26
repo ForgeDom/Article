@@ -25,3 +25,7 @@ exclude:
   - generate.py
   - topics.csv
   - README.md
+
+markdown: kramdown
+kramdown:
+  input: GFM
