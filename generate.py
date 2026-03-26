@@ -3,13 +3,12 @@ import datetime
 import os
 import re
 import urllib.request
+import urllib.error
 import json
+import time
 
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
-GEMINI_URL = (
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY
-)
+GROQ_API_KEY = os.environ["GROQ_API_KEY"]
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 AFFILIATE_LINKS = {
     "n8n":       "https://n8n.io/?ref=YOUR_ID",
@@ -75,32 +74,40 @@ def generate_article(topic):
         title=topic["title"],
         keyword=topic["keyword"]
     )
+
     payload = json.dumps({
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"maxOutputTokens": 2000}
+        "model": "llama-3.3-70b-versatile",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 2000,
+        "temperature": 0.7
     }).encode("utf-8")
 
     for attempt in range(3):
         try:
             req = urllib.request.Request(
-                GEMINI_URL,
+                GROQ_URL,
                 data=payload,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {GROQ_API_KEY}"
+                },
                 method="POST"
             )
             with urllib.request.urlopen(req) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-            return data["candidates"][0]["content"]["parts"][0]["text"]
+            return data["choices"][0]["message"]["content"]
 
         except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8")
+            print(f"HTTP {e.code}: {body}")
             if e.code == 429:
                 wait = 30 * (attempt + 1)
-                print(f"Rate limit hit, waiting {wait}s...")
-                import time; time.sleep(wait)
+                print(f"Rate limit, waiting {wait}s...")
+                time.sleep(wait)
             else:
                 raise
 
-    raise RuntimeError("Gemini API unavailable after 3 attempts")
+    raise RuntimeError("Groq API unavailable after 3 attempts")
 
 def inject_links(text):
     for tool, url in AFFILIATE_LINKS.items():
