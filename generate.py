@@ -14,40 +14,100 @@ AFFILIATE_LINKS = {
     "Render":    "https://render.com/?ref=YOUR_ID",
 }
 
-PROMPT_EN = """Write an SEO blog post about: {title}
+PROMPT_EN = """Write a detailed SEO blog post about: {title}
 Target keyword: "{keyword}"
 
-Structure:
-- H1: use the target keyword naturally
-- Intro (120 words): hook + what reader will learn
-- 3 sections with H2 headers (practical, specific)
-- Code example if relevant (Python or bash)
-- Conclusion with CTA
-- Section "Recommended tools" at the end
+Structure (follow exactly):
+# [H1 with keyword]
+
+[Intro: 2 paragraphs, hook + what reader will learn]
+
+## What is [topic] and why it matters
+[2-3 paragraphs, explain the problem this solves]
+
+## Step-by-step: [main action]
+[Numbered steps, each with explanation]
+[Include a real code example in Python or bash if relevant]
+
+## Common mistakes to avoid
+[3-5 bullet points with real mistakes and fixes]
+
+## [Tool/approach] vs alternatives
+| Feature | [Main tool] | Alternative 1 | Alternative 2 |
+|---------|------------|---------------|---------------|
+[Fill 4-5 rows with real comparisons]
+
+## FAQ
+**Q: [Common question 1]?**
+A: [Concise answer]
+
+**Q: [Common question 2]?**
+A: [Concise answer]
+
+**Q: [Common question 3]?**
+A: [Concise answer]
+
+## Recommended tools
+- [Tool 1] — [one line description]
+- [Tool 2] — [one line description]
+
+## Conclusion
+[2 paragraphs, summarize key points + CTA]
 
 Rules:
-- 900-1100 words total
+- 1200-1500 words total
 - Conversational tone, no buzzwords
-- No invented statistics
-- Mention real tools: n8n, Render, Hostinger where relevant
+- No invented statistics — only say "according to" if you're certain
+- Every code example must be real and runnable
+- Mention n8n, Render, Hostinger naturally where relevant
 """
 
-PROMPT_UK = """Напиши SEO-статтю для блогу на тему: {title}
+PROMPT_UK = """Напиши детальну SEO-статтю на тему: {title}
 Головний ключ: "{keyword}"
 
-Структура:
-- H1: використай ключове слово природно
-- Вступ (120 слів): чіпляючий початок + що дізнається читач
-- 3 секції з H2 заголовками (практичні, конкретні)
-- Приклад коду якщо доречно (Python або bash)
-- Висновок з CTA
-- Секція "Рекомендовані інструменти" в кінці
+Структура (дотримуйся точно):
+# [H1 з ключовим словом]
+
+[Вступ: 2 абзаци, чіпляючий початок + що дізнається читач]
+
+## Що таке [тема] і навіщо це потрібно
+[2-3 абзаци, поясни яку проблему це вирішує]
+
+## Покроково: [основна дія]
+[Нумеровані кроки з поясненням]
+[Додай реальний приклад коду на Python або bash якщо доречно]
+
+## Типові помилки яких варто уникати
+[3-5 пунктів з реальними помилками і як їх виправити]
+
+## [Інструмент] vs альтернативи
+| Критерій | [Головний інструмент] | Альтернатива 1 | Альтернатива 2 |
+|----------|----------------------|----------------|----------------|
+[Заповни 4-5 рядків реальними порівняннями]
+
+## Часті питання
+**Q: [Часте питання 1]?**
+A: [Коротка відповідь]
+
+**Q: [Часте питання 2]?**
+A: [Коротка відповідь]
+
+**Q: [Часте питання 3]?**
+A: [Коротка відповідь]
+
+## Рекомендовані інструменти
+- [Інструмент 1] — [один рядок опису]
+- [Інструмент 2] — [один рядок опису]
+
+## Висновок
+[2 абзаци, підсумок + CTA]
 
 Правила:
-- 800-1000 слів
+- 1100-1400 слів
 - Розмовний тон, без канцеляризмів
 - Не вигадуй статистику
-- Згадуй реальні інструменти: n8n, Render, Hostinger де доречно
+- Кожен приклад коду має бути реальним і робочим
+- Згадуй n8n, Render, Hostinger природно де доречно
 """
 
 def load_next_topic(path="topics.csv"):
